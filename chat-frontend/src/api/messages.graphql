@@ -1,0 +1,50 @@
+query GetMessages($data: GetMessageInput!) {
+  messages(data: $data) {
+    id
+    text
+    createdAt
+    user {
+      id
+      name
+    }
+  }
+}
+
+mutation CreateMessage($data: CreateMessageInput!) {
+  createMessage(data: $data) {
+    id
+    text
+    createdAt
+  }
+}
+
+query GetRooms {
+  rooms {
+    id
+    name
+    isPrivate
+  }
+}
+
+query GetRoom($id: Int!) {
+  room(id: $id) {
+    id
+    name
+    isPrivate
+  }
+}
+
+mutation CreateRoom($data: CreateRoomInput!) {
+  createRoom(data: $data) {
+    id
+    name
+  }
+}
+
+subscription RoomsMessages {
+  roomsMessages {
+    id
+    text
+    createdAt
+  }
+}

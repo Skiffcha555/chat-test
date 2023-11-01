@@ -1,0 +1,27 @@
+query GetUserByEmail($email: String!) {
+  userByEmail(email: $email) {
+    id
+    name
+    email
+    createdAt
+  }
+}
+
+mutation RegisterUser($data: CreateUserInput!) {
+  register(data: $data) {
+    id
+    name
+    email
+  }
+}
+
+mutation LoginUser($data: AuthInput!) {
+  signIn(data: $data) {
+    token
+    user {
+      id
+      name
+      email
+    }
+  }
+}

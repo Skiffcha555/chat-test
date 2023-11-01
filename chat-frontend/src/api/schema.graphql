@@ -1,0 +1,83 @@
+type User {
+  id: Int!
+  name: String!
+  email: String!
+  createdAt: DateTime!
+  rooms: [Room!]!
+}
+
+scalar DateTime
+
+type Room {
+  id: Int!
+  name: String
+  isPrivate: Boolean!
+  users: [User!]!
+  messages(orderBy: String!): [Message!]!
+}
+
+type Message {
+  id: Int!
+  text: String!
+  createdAt: DateTime!
+  user_id: Int!
+  room_id: Int!
+  user: User!
+  room: Room!
+}
+
+type AuthDTO {
+  user: User!
+  token: String!
+}
+
+type Query {
+  messages(data: GetMessageInput!): [Message!]!
+  user: User!
+  userByEmail(email: String!): User!
+  rooms: [Room!]!
+  room(id: Int!): Room!
+}
+
+input GetMessageInput {
+  room_id: Float!
+  orderBy: String! = "asc"
+}
+
+type Mutation {
+  createMessage(data: CreateMessageInput!): Message!
+  register(data: CreateUserInput!): User!
+  createRoom(data: CreateRoomInput!): Room!
+  addUsersToRoom(data: AddUsersToRoomInput!): Room!
+  signIn(data: AuthInput!): AuthDTO!
+}
+
+input CreateMessageInput {
+  room_id: Float!
+  text: String!
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+  password: String!
+}
+
+input CreateRoomInput {
+  name: String!
+  users_ids: [Int!]
+}
+
+input AddUsersToRoomInput {
+  room_id: Int!
+  users_ids: [Int!]!
+}
+
+input AuthInput {
+  email: String!
+  password: String!
+}
+
+type Subscription {
+  roomsMessages: Message!
+}
