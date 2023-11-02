@@ -1,32 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useGetRoomsQuery, useGetMessagesQuery, useCreateMessageMutation, useCreateRoomMutation, useRoomsMessagesSubscription } from '../generated/graphql';
-import { Layout, Menu, Input, Button, List } from 'antd';
+import { Layout, Input, Button, List, Row, Col } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { Divider } from 'antd';
 import { useAuth } from '../components/Auth/AuthProvider';
 
-const { Sider, Content } = Layout;
+const { Header, Content } = Layout;
 const { TextArea } = Input;
 
 const ChatPage = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [selectedRoom, setSelectedRoom] = useState(0);
   const [newMessage, setNewMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const { data: roomsData, refetch: refetchRooms } = useGetRoomsQuery();
-  const [createRoom] = useCreateRoomMutation()
+  const { refetch: refetchRooms } = useGetRoomsQuery({
+    onCompleted() {
+      setSelectedRoom(1);
+    }
+  });
+  const [createRoom] = useCreateRoomMutation();
   const { data: messagesData, refetch } = useGetMessagesQuery({
     variables: { data: { room_id: selectedRoom, orderBy: 'asc' } },
     skip: !selectedRoom,
   });
   const { data: newMessages } = useRoomsMessagesSubscription();
   const [createMessage] = useCreateMessageMutation();
-  const { user } = useAuth()
+  const { user } = useAuth();
 
-  const handleRoomClick = (roomId: number | undefined) => {
-    if (roomId) {
-      setSelectedRoom(roomId);
-    }
+  const scrollToBottom = () => {
+    window.scrollBy({
+      top: 10000,
+      left: 0, 
+      behavior: 'smooth'
+    });
   };
 
   const handleSendMessage = async () => {
@@ -35,6 +40,7 @@ const ChatPage = () => {
         variables: { data: { room_id: selectedRoom, text: newMessage } },
       });
       setNewMessage('');
+      scrollToBottom();
     } else if (newMessage.trim() && !selectedRoom) {
       createRoom({
         variables: {
@@ -48,20 +54,18 @@ const ChatPage = () => {
             Authorization: "Bearer " + localStorage.getItem('token')
           },
         }
-      }).then(() => refetchRooms)
+      }).then(() => {
+        refetchRooms();
+        scrollToBottom();
+      })
     }
   };
 
   const handleLogOut = () => {
-    localStorage.removeItem('token')
-    navigate('/login')
-  }
-
-  useEffect(() => {
-    if (roomsData?.rooms?.length) {
-      setSelectedRoom(1)
-    }
-  }, [roomsData?.rooms])
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    navigate('/login');
+  };
 
   useEffect(() => {
     if (selectedRoom) {
@@ -72,59 +76,66 @@ const ChatPage = () => {
   useEffect(() => {
     if (messagesData?.messages) {
       // @ts-ignore
-      setMessages((v) => [...v, ...messagesData?.messages])
+      setMessages((v) => [...v, ...messagesData.messages]);
     }
-  }, [messagesData?.messages])
+  }, [messagesData?.messages]);
 
   useEffect(() => {
     if (newMessages) {
       // @ts-ignore
-      setMessages((v) => [...v, newMessages.roomsMessages])
+      setMessages((v) => [...v, newMessages.roomsMessages]);
     }
-  }, [newMessages])
-
-  console.log(user);
-  
+  }, [newMessages]);
 
   useEffect(() => {
-    refetchRooms()
-    refetch()
-  }, [])
+    refetchRooms();
+    refetch();
+  }, []);
 
   return (
-    <Layout style={{ height: '100vh' }}>
-      <Sider width={200} >
-        <Menu mode="vertical"
-          // @ts-ignore 
-          selectedKeys={[selectedRoom]}>
-          <Menu.Item onClick={() => handleRoomClick(roomsData?.rooms[0]?.id)}>
-            {roomsData?.rooms[0]?.name}
-          </Menu.Item>
-        </Menu>
-      </Sider>
-      <Layout>
-        <Content>
-          <List
-            dataSource={messages}
-            renderItem={(item) => (
-              <List.Item>
-                <List.Item.Meta
-                  // @ts-ignore
-                  title={item?.user?.name}
-                  // @ts-ignore
-                  description={item?.text}
-                />
-              </List.Item>
-            )}
-          />
-          <div className="message-input" style={{ position: 'sticky', bottom: 0, background: '#fff', padding: '10px' }}>
-            <TextArea rows={2} value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-            <Divider />
-            <Button size='large' type="primary" onClick={handleSendMessage}>Send</Button>
+    <Layout>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Header style={{ position: 'fixed', width: '100%', zIndex: 1, background: '#1890ff', color: 'white', textAlign: 'center' }}>
+          <Button size='large' type="default" onClick={handleLogOut}>Log Out</Button>
+        </Header>
+        <Content style={{ marginTop: '64px' }}>
+          <div style={{ minHeight: '80vh' }}>
+            <Row>
+              <Col span={6}></Col>
+              <Col span={12} style={{ background: '#fff' }}>
+                <Content>
+                  <List
+                    dataSource={messages}
+                    renderItem={(item) => (
+                      <List.Item 
+                        style={{ 
+                          padding: 12, 
+                          // @ts-ignore
+                          textAlign: item?.user?.name === user?.email ? 'right' : 'left' 
+                        }}
+                      >
+                        <List.Item.Meta
+                          // @ts-ignore
+                          title={item?.user?.name === user?.email ? 'Me' : item?.user?.name}
+                          // @ts-ignore
+                          description={item?.text}
+                        />
+                      </List.Item>
+                    )}
+                  />
+                  <div style={{ position: 'sticky', bottom: 0, background: '#fff', padding: '10px', borderTop: '1px solid rgb(0 0 0 / 15%)' }}>
+                    <TextArea rows={2} value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                      <Button style={{ width: '100%' }} size='large' type="primary" onClick={handleSendMessage}>Send</Button>
+                    </div>
+                  </div>
+                </Content>
+              </Col>
+              <Col span={6}></Col>
+            </Row>
           </div>
         </Content>
       </Layout>
-      <Button type="primary" onClick={handleLogOut}>Log Out</Button>
     </Layout>
   );
 };

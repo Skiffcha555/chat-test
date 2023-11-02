@@ -3,11 +3,12 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AuthContextProps {
   user: User | null;
-  handleLogin: (token: string) => Promise<void>;
+  handleLogin: (token: string, email: string) => Promise<void>;
 }
 
 interface User {
   token: string;
+  email: string;
 }
 
 interface AuthProviderProps {
@@ -19,8 +20,8 @@ const AuthContext = createContext<AuthContextProps | null>(null);
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const handleLogin = async (token: string) => {
-    setUser({ token });
+  const handleLogin = async (token: string, email: string) => {
+    setUser({ token, email });
   };
 
   return (

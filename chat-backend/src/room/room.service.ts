@@ -30,7 +30,15 @@ export class RoomService {
   }
 
   async getAllRooms(): Promise<Room[]> {
-    return await this.prismaService.room.findMany();
+    return await this.prismaService.room.findMany({
+      include: {
+        messages: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
   }
 
   private async getRoom(id: number): Promise<Room> {
@@ -68,7 +76,7 @@ export class RoomService {
   }
 
   async addManyUsersToRoom(users_ids: number[], room_id: number) {
-    this.getRoom(room_id); // checks if room exists
+    this.getRoom(room_id);
     await Promise.all(
       users_ids.map(async (id) => {
         const existingRecord = await this.findUserInRoom(id, room_id);

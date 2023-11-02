@@ -26,6 +26,11 @@ const wsClient = createClient({
   }),
 });
 
+wsClient.on('closed', () => {
+  localStorage.removeItem('token');
+  window.location.href = '/login';
+});
+
 const wsLink = new GraphQLWsLink(wsClient);
 
 const splitLink = split(

@@ -33,15 +33,14 @@ export class MessageResolver {
   @UseGuards(AuthGuard)
   @Query((returns) => [Message])
   async messages(@Args('data') data: GetMessageInput) {
-    return await this.messageService.findAllByRoom(data.room_id, data.orderBy);
+    return this.messageService.findAllByRoom(data.room_id, data.orderBy);
   }
 
   @UseGuards(AuthGuard)
   @Subscription((returns) => Message)
   async roomsMessages(@useUser() user_id: number) {
-    const userRoomsIds = (await this.roomService.getAllRooms()).map(
-      (room) => `room_${room.id}`,
-    );
+    const rooms = await this.roomService.getAllRooms();
+    const userRoomsIds = rooms.map((room) => `room_${room.id}`);
     return this.pubSub.asyncIterator(userRoomsIds);
   }
 
@@ -61,12 +60,12 @@ export class MessageResolver {
 
   @ResolveField((returns) => User, { name: 'user' })
   async getUser(@Parent() message: Message) {
-    return await this.userService.findOneByID(message.user_id);
+    return this.userService.findOneByID(message.user_id);
   }
 
   @UseGuards(AuthGuard)
   @ResolveField((returns) => Room, { name: 'room' })
   async getRoom(@Parent() message: Message, @useUser() user_id: number) {
-    return await this.roomService.getRoomData(message.room_id, user_id);
+    return this.roomService.getRoomData(message.room_id, user_id);
   }
 }

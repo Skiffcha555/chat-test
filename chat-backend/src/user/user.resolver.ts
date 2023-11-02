@@ -26,21 +26,21 @@ export class UsersResolver {
   @UseGuards(AuthGuard)
   @Query((returns) => User, { name: 'user' })
   async getUserByID(@useUser() user_id: number) {
-    return await this.userService.findOneByID(user_id);
+    return this.userService.findOneByID(user_id);
   }
 
   @Query((returns) => User, { name: 'userByEmail' })
   async getUserByEmail(@Args('email', { type: () => String }) email: string) {
-    return await this.userService.findUserByEmail(email);
+    return this.userService.findUserByEmail(email);
   }
 
   @Mutation((returns) => User, { name: 'register' })
   async createUser(@Args('data') data: CreateUserInput) {
-    return await this.userService.createUser(data);
+    return this.userService.createUser(data);
   }
 
   @ResolveField((returns) => [Room])
   async rooms(@Parent() user: User) {
-    return await this.roomService.getAllRooms();
+    return this.roomService.getAllRooms();
   }
 }

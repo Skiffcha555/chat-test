@@ -46,5 +46,9 @@ subscription RoomsMessages {
     id
     text
     createdAt
+    user {
+      id
+      name
+    }
   }
 }

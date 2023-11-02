@@ -10,7 +10,7 @@ const LoginPage = () => {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      handleLogin(localStorage.getItem('token') || '')
+      handleLogin(localStorage.getItem('token') || '', localStorage.getItem('email') || '')
       navigate('/chat')
     }
   }, [])

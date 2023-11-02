@@ -12,27 +12,31 @@ import { Request } from 'express';
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const ctx = GqlExecutionContext.create(context);
-    const conn = ctx.getContext();
+    try {
+      const ctx = GqlExecutionContext.create(context);
+      const conn = ctx.getContext();
 
-    let token: string;
+      let token: string;
 
-    if (conn.req.connectionParams?.authToken) {
-      token = conn.req.connectionParams.authToken || '';
-    } else if (conn.req.extra) {
-      token = conn.req.extra.access_token;
-    } else {
-      token = this.extractTokenFromRequest(conn.req);
+      if (conn.req.connectionParams?.authToken) {
+        token = conn.req.connectionParams.authToken || '';
+      } else if (conn.req.extra) {
+        token = conn.req.extra.access_token;
+      } else {
+        token = this.extractTokenFromRequest(conn.req);
+      }
+
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: 'JWT_SECRET',
+      });
+
+      if (!payload) throw new UnauthorizedException('Invalid token');
+
+      conn.req.user_id = payload.sub;
+      return true;
+    } catch (error) {
+      console.log(error);
     }
-
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: 'JWT_SECRET',
-    });
-
-    if (!payload) throw new UnauthorizedException('Invalid token');
-
-    conn.req.user_id = payload.sub;
-    return true;
   }
 
   private extractTokenFromRequest(request: Request) {

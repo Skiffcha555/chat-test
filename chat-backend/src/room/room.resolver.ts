@@ -39,12 +39,12 @@ export class RoomResolver {
     @Args('id', { type: () => Int }) id: number,
     @useUser('id') user_id: number,
   ) {
-    return await this.roomService.getRoomData(id, user_id);
+    return this.roomService.getRoomData(id, user_id);
   }
 
   @ResolveField((returns) => [User], { name: 'users' })
   async getUsersByRooms(@Parent() room: Room) {
-    return await this.userService.findAllByRoomID(room.id);
+    return this.userService.findAllByRoomID(room.id);
   }
 
   @ResolveField((returns) => [Message])
@@ -76,11 +76,8 @@ export class RoomResolver {
   @Mutation(() => Room, { name: 'addUsersToRoom' })
   async addUsersToExistingRoom(
     @Args('data') data: AddUsersToRoomInput,
-    @useUser() id: number,
-  ) {
-    return await this.roomService.addManyUsersToRoom(
-      data.users_ids,
-      data.room_id,
-    );
+    @useUser() user_id: number,
+  ): Promise<Room> {
+    return this.roomService.addManyUsersToRoom(data.users_ids, data.room_id);
   }
 }

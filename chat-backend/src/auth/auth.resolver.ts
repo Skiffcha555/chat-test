@@ -5,9 +5,11 @@ import { AuthDTO } from 'src/user/models/dto/authDto.types';
 
 @Resolver()
 export class AuthResolver {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
+
   @Mutation(() => AuthDTO)
-  async signIn(@Args('data') { email, password }: AuthInput) {
-    return await this.authService.signIn({ email, password });
+  async signIn(@Args('data') authInput: AuthInput): Promise<AuthDTO> {
+    const { email, password } = authInput;
+    return this.authService.signIn({ email, password });
   }
 }

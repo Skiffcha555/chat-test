@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Message, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 
@@ -29,15 +25,6 @@ export class MessageService {
       where: { id: data.user_id },
     });
     if (!user) throw new NotFoundException('User not found');
-
-    // const userIsInRoom = await this.prismaService.usersOnRooms.findFirst({
-    //   where: { user_id: data.user_id, room_id: data.room_id },
-    // });
-
-    // if (!userIsInRoom)
-    //   throw new UnauthorizedException(
-    //     "User isn't authorized to access the room",
-    //   );
 
     return await this.prismaService.message.create({ data });
   }
