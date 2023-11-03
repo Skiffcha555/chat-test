@@ -6,11 +6,16 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const ctx = GqlExecutionContext.create(context);
@@ -26,8 +31,13 @@ export class AuthGuard implements CanActivate {
         token = this.extractTokenFromRequest(conn.req);
       }
 
+      const secret = this.configService.get<string>('JWT_SECRET');
+      if (!secret) {
+        throw new Error('Secret not found');
+      }
+
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: 'JWT_SECRET',
+        secret: secret,
       });
 
       if (!payload) throw new UnauthorizedException('Invalid token');

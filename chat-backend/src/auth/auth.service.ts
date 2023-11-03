@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma.service';
 
 interface SignInDTO {
@@ -13,6 +14,7 @@ export class AuthService {
   constructor(
     private prismaService: PrismaService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async signIn({ email, password }: SignInDTO) {
@@ -20,17 +22,21 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid email or password');
 
     const passwordMatch = await compare(password, user.password);
-
     if (!passwordMatch)
       throw new UnauthorizedException('Invalid email or password');
 
+    const secret = this.configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error('Environment variable JWT_SECRET is not set!');
+    }
+
     const token = await this.jwtService.signAsync(
       { sub: user.id },
-      { secret: 'JWT_SECRET' },
+      { secret: secret },
     );
 
     return {
-      user: user,
+      user,
       token,
     };
   }

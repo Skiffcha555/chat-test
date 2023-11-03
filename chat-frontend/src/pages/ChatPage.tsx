@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGetRoomsQuery, useGetMessagesQuery, useCreateMessageMutation, useCreateRoomMutation, useRoomsMessagesSubscription } from '../generated/graphql';
+import { useGetRoomsQuery, useGetMessagesQuery, useCreateMessageMutation, useCreateRoomMutation, useRoomsMessagesSubscription, useGetUserByEmailQuery } from '../generated/graphql';
 import { Layout, Input, Button, List, Row, Col } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/Auth/AuthProvider';
@@ -25,12 +25,18 @@ const ChatPage = () => {
   const { data: newMessages } = useRoomsMessagesSubscription();
   const [createMessage] = useCreateMessageMutation();
   const { user } = useAuth();
+  const { data: fullUser } = useGetUserByEmailQuery(
+    {
+      variables: {
+        email: user?.email ? user?.email : ''
+      }
+    }
+  )
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (behavior: ScrollBehavior) => {
     window.scrollBy({
-      top: 10000,
-      left: 0, 
-      behavior: 'smooth'
+      top: document.documentElement.scrollHeight,
+      behavior
     });
   };
 
@@ -40,7 +46,7 @@ const ChatPage = () => {
         variables: { data: { room_id: selectedRoom, text: newMessage } },
       });
       setNewMessage('');
-      scrollToBottom();
+      scrollToBottom('smooth');
     } else if (newMessage.trim() && !selectedRoom) {
       createRoom({
         variables: {
@@ -56,7 +62,7 @@ const ChatPage = () => {
         }
       }).then(() => {
         refetchRooms();
-        scrollToBottom();
+        scrollToBottom('smooth');
       })
     }
   };
@@ -88,15 +94,29 @@ const ChatPage = () => {
   }, [newMessages]);
 
   useEffect(() => {
-    refetchRooms();
-    refetch();
-  }, []);
+    if (!newMessages) {
+      scrollToBottom('auto');
+    }
+  }, [messages]);
 
   return (
     <Layout>
       <Layout style={{ minHeight: '100vh' }}>
-        <Header style={{ position: 'fixed', width: '100%', zIndex: 1, background: '#1890ff', color: 'white', textAlign: 'center' }}>
-          <Button size='large' type="default" onClick={handleLogOut}>Log Out</Button>
+        <Header style={{ position: 'fixed', width: '100%', height: 'auto',  zIndex: 1, background: '#1890ff', color: 'white', textAlign: 'center' }}>
+          <Row>
+            <Col style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', fontSize: 16 }} span={4}>
+              <div style={{ display: 'flex', lineHeight: 'normal' }}>
+                <h4 style={{ margin: 0, marginRight: 6 }}>Email:</h4> {fullUser?.userByEmail.email}
+              </div>
+              <div style={{ display: 'flex', lineHeight: 'normal' }}>
+                <h4 style={{ margin: 0, marginRight: 6 }}>Name:</h4> {fullUser?.userByEmail.name}
+              </div>
+            </Col>
+            <Col span={18}></Col>
+            <Col span={2}>
+              <Button size='large' type="default" onClick={handleLogOut}>Log Out</Button>
+            </Col>
+          </Row>
         </Header>
         <Content style={{ marginTop: '64px' }}>
           <div style={{ minHeight: '80vh' }}>
@@ -107,11 +127,11 @@ const ChatPage = () => {
                   <List
                     dataSource={messages}
                     renderItem={(item) => (
-                      <List.Item 
-                        style={{ 
-                          padding: 12, 
+                      <List.Item
+                        style={{
+                          padding: 12,
                           // @ts-ignore
-                          textAlign: item?.user?.name === user?.email ? 'right' : 'left' 
+                          textAlign: item?.user?.name === user?.email ? 'right' : 'left'
                         }}
                       >
                         <List.Item.Meta
