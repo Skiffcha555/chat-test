@@ -87,14 +87,15 @@ const LoginComponent = () => {
             </div>
           </Col>
           <Col span={8}>
-            {error ? <Alert
-              message={errorMessage}
-              type={"error"}
-              closable
-            /> : ''}
           </Col>
         </Row>
       </div>
+      {error ? <Alert
+        message={errorMessage}
+        style={{ position: 'absolute', top: 20, right: 20 }}
+        type={"error"}
+        closable
+      /> : ''}
     </div>
   );
 };

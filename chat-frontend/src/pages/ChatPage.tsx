@@ -42,28 +42,30 @@ const ChatPage = () => {
 
   const handleSendMessage = async () => {
     if (newMessage.trim() && selectedRoom) {
-      await createMessage({
-        variables: { data: { room_id: selectedRoom, text: newMessage } },
-      });
-      setNewMessage('');
-      scrollToBottom('smooth');
+      try {
+        await createMessage({
+          variables: { data: { room_id: selectedRoom, text: newMessage } },
+        });
+        setNewMessage('');
+        scrollToBottom('smooth');
+      } catch (error) {
+        console.log(error);
+      }
     } else if (newMessage.trim() && !selectedRoom) {
-      createRoom({
-        variables: {
-          data: {
-            name: 'room',
-            users_ids: [1]
-          }
-        },
-        context: {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem('token')
+      try {
+        await createRoom({
+          variables: {
+            data: {
+              name: 'room',
+              users_ids: [1]
+            }
           },
-        }
-      }).then(() => {
+        })
         refetchRooms();
         scrollToBottom('smooth');
-      })
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -102,7 +104,7 @@ const ChatPage = () => {
   return (
     <Layout>
       <Layout style={{ minHeight: '100vh' }}>
-        <Header style={{ position: 'fixed', width: '100%', height: 'auto',  zIndex: 1, background: '#1890ff', color: 'white', textAlign: 'center' }}>
+        <Header style={{ position: 'fixed', width: '100%', height: 'auto', zIndex: 1, background: '#1890ff', color: 'white', textAlign: 'center' }}>
           <Row>
             <Col style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', fontSize: 16 }} span={4}>
               <div style={{ display: 'flex', lineHeight: 'normal' }}>
@@ -131,12 +133,12 @@ const ChatPage = () => {
                         style={{
                           padding: 12,
                           // @ts-ignore
-                          textAlign: item?.user?.name === user?.email ? 'right' : 'left'
+                          textAlign: item?.user?.email === user?.email ? 'right' : 'left'
                         }}
                       >
                         <List.Item.Meta
                           // @ts-ignore
-                          title={item?.user?.name === user?.email ? 'Me' : item?.user?.name}
+                          title={item?.user?.email === user?.email ? 'Me' : item?.user?.name}
                           // @ts-ignore
                           description={item?.text}
                         />

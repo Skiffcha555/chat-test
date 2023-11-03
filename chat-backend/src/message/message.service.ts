@@ -7,7 +7,7 @@ export class MessageService {
   constructor(private prismaService: PrismaService) {}
 
   async findAllByRoom(room_id: number, orderBy = 'asc') {
-    return await this.prismaService.message.findMany({
+    return this.prismaService.message.findMany({
       where: { room_id },
       orderBy: { createdAt: orderBy === 'desc' ? 'desc' : 'asc' },
     });
@@ -26,6 +26,6 @@ export class MessageService {
     });
     if (!user) throw new NotFoundException('User not found');
 
-    return await this.prismaService.message.create({ data });
+    return this.prismaService.message.create({ data });
   }
 }

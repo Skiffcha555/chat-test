@@ -157,7 +157,7 @@ export type GetMessagesQueryVariables = Exact<{
 }>;
 
 
-export type GetMessagesQuery = { __typename?: 'Query', messages: Array<{ __typename?: 'Message', id: number, text: string, createdAt: any, user: { __typename?: 'User', id: number, name: string } }> };
+export type GetMessagesQuery = { __typename?: 'Query', messages: Array<{ __typename?: 'Message', id: number, text: string, createdAt: any, user: { __typename?: 'User', id: number, name: string, email: string } }> };
 
 export type CreateMessageMutationVariables = Exact<{
   data: CreateMessageInput;
@@ -188,7 +188,7 @@ export type CreateRoomMutation = { __typename?: 'Mutation', createRoom: { __type
 export type RoomsMessagesSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type RoomsMessagesSubscription = { __typename?: 'Subscription', roomsMessages: { __typename?: 'Message', id: number, text: string, createdAt: any, user: { __typename?: 'User', id: number, name: string } } };
+export type RoomsMessagesSubscription = { __typename?: 'Subscription', roomsMessages: { __typename?: 'Message', id: number, text: string, createdAt: any, user: { __typename?: 'User', id: number, name: string, email: string } } };
 
 export type GetUserByEmailQueryVariables = Exact<{
   email: Scalars['String']['input'];
@@ -221,6 +221,7 @@ export const GetMessagesDocument = gql`
     user {
       id
       name
+      email
     }
   }
 }
@@ -419,6 +420,7 @@ export const RoomsMessagesDocument = gql`
     user {
       id
       name
+      email
     }
   }
 }

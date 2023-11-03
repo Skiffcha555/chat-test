@@ -30,7 +30,7 @@ export class RoomService {
   }
 
   async getAllRooms(): Promise<Room[]> {
-    return await this.prismaService.room.findMany({
+    return this.prismaService.room.findMany({
       include: {
         messages: {
           include: {
@@ -62,7 +62,7 @@ export class RoomService {
 
   async addUserToRoom(user_id: number, room_id: number) {
     await this.getRoom(room_id);
-    return await this.prismaService.usersOnRooms.create({
+    return this.prismaService.usersOnRooms.create({
       data: { room_id, user_id },
     });
   }
@@ -98,6 +98,6 @@ export class RoomService {
       data: { isPrivate: false },
     });
 
-    return await this.getRoom(room_id);
+    return this.getRoom(room_id);
   }
 }

@@ -6,6 +6,7 @@ query GetMessages($data: GetMessageInput!) {
     user {
       id
       name
+      email
     }
   }
 }
@@ -49,6 +50,7 @@ subscription RoomsMessages {
     user {
       id
       name
+      email
     }
   }
 }

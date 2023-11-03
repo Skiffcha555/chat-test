@@ -57,7 +57,7 @@ export class UserService {
     if (emailExists)
       throw new BadRequestException('This email is already being used!');
 
-    return await this.prismaService.user.create({
+    return this.prismaService.user.create({
       data: {
         ...data,
         password: await hash(data.password, 8),
